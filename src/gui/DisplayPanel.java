@@ -7,8 +7,6 @@ import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-//import java.awt.geom.Ellipse2D;
-//import static java.lang.Integer.MAX_VALUE;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
