@@ -46,9 +46,7 @@ public class Edge {
     public int getMidY(){
         return (_start_node.getY()+_end_node.getY())/2;
     }
-
-    
-    
+  
     public void setGrowth(double a){
     	_growth = a;
     }
