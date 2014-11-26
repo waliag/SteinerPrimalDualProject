@@ -11,8 +11,8 @@ public class SPDModel {
     private final List<Edge> _edges;
     
     public SPDModel(){
-        _node_list = new ArrayList<>();
-        _edges = new ArrayList<>();
+        _node_list = new ArrayList<Node>();
+        _edges = new ArrayList<Edge>();
     }
     
     public void addNode(int x, int y){
@@ -24,6 +24,17 @@ public class SPDModel {
         Node endNode = getNodeByName(endNodeName);
         if(startNode != null && endNode != null){
             _edges.add(new Edge(startNode, endNode, cost));
+        }
+    }
+    
+    public void setTerminals(String startNodeName, String endNodeName) {
+   	 Node startNode = getNodeByName(startNodeName);
+        Node endNode = getNodeByName(endNodeName);
+        if(startNode != null && endNode != null){
+       	 startNode.setTerminal(true);
+       	 endNode.setTerminal(true);
+       	 startNode.addToConnectNodes(endNode);
+       	 endNode.addToConnectNodes(startNode);
         }
     }
     
@@ -41,10 +52,10 @@ public class SPDModel {
     }
     
     public List<Node> getAllNodes(){
-        return new ArrayList<>(_node_list);
+        return new ArrayList<Node>(_node_list);
     }
     
     public List<Edge> getAllEdges(){
-        return new ArrayList<>(_edges);
+        return new ArrayList<Edge>(_edges);
     }
 }

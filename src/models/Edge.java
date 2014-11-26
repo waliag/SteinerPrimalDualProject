@@ -7,6 +7,7 @@ public class Edge {
     private final Node _end_node;
     private int _primal_x;
     private final int _cost; 
+    private double _growth;
     
     Edge(Node start, Node end, int a_cost)
     {
@@ -14,11 +15,12 @@ public class Edge {
         _end_node = end;
         _primal_x = 0;
         _cost = a_cost;
+        _growth = 0;
     }
     
-    public void setPrimal()
+    public void setPrimal(int a)
     {
-        _primal_x = 1;
+        _primal_x = a;
     }
     public int getPrimal()
     {
@@ -43,5 +45,15 @@ public class Edge {
     
     public int getMidY(){
         return (_start_node.getY()+_end_node.getY())/2;
+    }
+
+    
+    
+    public void setGrowth(double a){
+    	_growth = a;
+    }
+    
+    public double getGrowth(){
+    	return _growth;
     }
 }

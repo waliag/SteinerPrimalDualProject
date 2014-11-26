@@ -22,7 +22,11 @@ import models.*;
 
 public class SteinerPrimalDualGUI extends JFrame implements MouseListener, ActionListener {
 
-    JButton edgeButton;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	JButton edgeButton, terminalButton;
     DisplayPanel graphPanel;
     JButton runAlgoButton;
     JButton connectivityButton;
@@ -41,12 +45,41 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
         graphPanel.setVisible(true);
         this.add(graphPanel);
 
-        //Create the button to add edges
+      //Create the button to add edges
         edgeButton = new JButton("Add Edges");
-        edgeButton.addActionListener(this);
-        this.add(edgeButton);
-
+        
+        ActionListener EdgeActionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+           
+            	Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
+                String connect_condition = (String) JOptionPane.showInputDialog(topPanel, "Enter the node name between which the edge is drawn with the weight. Format is Node1,Node2,Weight.Example:N1,N2,5.", "Edge and weight", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
+                if(connect_condition!=null){
+                	checkValidStringAndCreateEdges(connect_condition);
+                }  
+            }
+        };
+        edgeButton.addActionListener(EdgeActionListener);
         topPanel.add(edgeButton);
+        //this.add(edgeButton);
+        
+      //Create the button to add terminals
+        terminalButton = new JButton("Add Terminals");
+        
+        ActionListener TerminalActionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+           
+            	Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
+                String connect_req = (String) JOptionPane.showInputDialog(topPanel, "Enter the connectivity requirement to connect 2 nodes. In order to connect Node1 and Node2, format is Node1,Node2.Example:N1,N2", "Connectivity Requirement", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
+                if(connect_req!=null){
+                	checkValidStringAndSetTerminals(connect_req);
+                }
+            }
+        };
+        terminalButton.addActionListener(TerminalActionListener);
+        topPanel.add(terminalButton);
+
         ActionListener actionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -140,12 +173,6 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == edgeButton) {
-            Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
-            String connect_condition = (String) JOptionPane.showInputDialog(this,
-                    "Enter the node name between which the edge is drawn with the weight. Format is Node1,Node2,Weight.Example:N1,N2,5.", "Edge and weight", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
-            checkValidStringAndCreateEdges(connect_condition);
-        }
     }
     
     private boolean checkValidStringAndCreateEdges(String connect_condition) {
@@ -174,5 +201,30 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
         }
         return valid_string;
     }
+    
+    private boolean checkValidStringAndSetTerminals(String connect_req) {
+		boolean valid_string = true;
+		connect_req = connect_req.replaceAll("[\\s]+", "");
+        StringTokenizer nodeStr = new StringTokenizer(connect_req, ",");
+        if (nodeStr.countTokens() != 2) {
+            valid_string = false;
+        }
+        String nextSubStr = null;
+        String[] nodeStrArr = new String[2];
+        int itr = 0;
+        while (valid_string && nodeStr.hasMoreTokens()) {
+            nextSubStr = nodeStr.nextToken();
+            if (nextSubStr.contains("N")) {
+            	nodeStrArr[itr] = nextSubStr;
+            } else {
+                valid_string = false;
+            }
+            itr++;
+        }
+        if (valid_string == true) {
+            _model.setTerminals(nodeStrArr[0], nodeStrArr[1]);
+        }
+        return valid_string;
+	}
 
 }
