@@ -18,7 +18,11 @@ import models.*;
  */
 public class DisplayPanel extends JPanel
 {
-    private static final int _DIA = 30;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static final int _DIA = 30;
     
     public DisplayPanel(final SPDModel model)
     {
@@ -53,7 +57,12 @@ public class DisplayPanel extends JPanel
     private void drawNode(Node node)
     {
         Graphics g = getGraphics();
-        g.setColor(Color.MAGENTA);
+        if(node.isTeminal()) {
+    		g.setColor(Color.BLUE);
+    	} else {
+    		g.setColor(Color.MAGENTA);
+    	}
+        
         g.drawOval(node.getX()-_DIA/2,
                 node.getY()-_DIA/2,
                 _DIA,
