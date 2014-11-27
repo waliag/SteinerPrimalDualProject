@@ -94,8 +94,7 @@ public class SteinerPDAlgo {
         int end_loop = 0;
         int i = 0;
         int numActiveSets = 0;
-       // List<Edge> edges = model.getAllEdges();
-
+       
         while (end_loop != edges.size() && i < edges.size()) {
 
             Node startNode = edges.get(i).getStartNode();
