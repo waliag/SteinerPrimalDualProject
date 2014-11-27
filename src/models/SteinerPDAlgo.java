@@ -2,7 +2,7 @@ package models;
 
 import gui.DisplayPanel;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,32 +10,34 @@ public class SteinerPDAlgo {
 
     public void runAlgorithm(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
 
-        //Test Code
-        int offset = 130;
-        for (int i = 0; i < 3; i++) {
-            model.addNode(offset + i * 100, 100);
-            model.addNode(offset + i * 100, 200);
+        //START Test Code
+        if(model.getAllNodes().isEmpty()){
+            int offset = 130;
+            for (int i = 0; i < 3; i++) {
+                model.addNode(offset + i * 100, 100);
+                model.addNode(offset + i * 100, 200);
+            }
+
+            model.addEdge("n1", "n3", 3);
+            model.addEdge("n3", "n5", 13);
+            model.addEdge("n5", "n6", 9);
+            model.addEdge("n6", "n4", 15);
+            model.addEdge("n4", "n2", 1);
+            model.addEdge("n2", "n1", 10);
+            model.addEdge("n3", "n4", 2);
+
+            model.setTerminals("n1", "n2");
+            model.setTerminals("n5", "n6");
         }
+        //END Test code
         
-//        for (int i = 0; i < 4; i++) {
-//            model.addNode(offset + i * 100, 300);
-//        }
-
-        model.addEdge("n1", "n3", 3);
-        model.addEdge("n3", "n5", 13);
-        model.addEdge("n5", "n6", 9);
-        model.addEdge("n6", "n4", 15);
-        model.addEdge("n4", "n2", 1);
-        model.addEdge("n2", "n1", 10);
-        model.addEdge("n3", "n4", 2);
-
-        model.setTerminals("n1", "n2");
-        model.setTerminals("n5", "n6");
-
+        //reset
+        model.clearState();
+        graphPanel.repaint();
+        
         Thread.sleep(1000);
-        //END test code
-
-          //Initially put all terminal nodes in diff active sets
+        
+        //Initially put all terminal nodes in diff active sets
         for(Node n:model.getAllNodes())
         {
             if(n.isTeminal())
@@ -112,14 +114,12 @@ public class SteinerPDAlgo {
         boolean start;
         boolean end;
         List<Edge> edges = model.getAllEdges();
-        int end_loop = 0;
         int i = 0;
         
-        //while (end_loop != edges.size() && i < edges.size()) {
         while (i < edges.size()) {
-            Node startNode = edges.get(i).getStartNode();
-            Node endNode = edges.get(i).getEndNode();
             Edge currentEdge = edges.get(i);
+            Node startNode = currentEdge.getStartNode();
+            Node endNode = currentEdge.getEndNode();
             start = startNode.isTeminal();
             end = endNode.isTeminal();
 
@@ -129,13 +129,12 @@ public class SteinerPDAlgo {
             if(currentEdge.getPrimal() == 1)
             {
                 i++;
-                end_loop++;
                 continue;
             }
-            if (((start == true && end == false)
-                    || (start == false && end == true)
-                    || (start == true && end == true))
-                    || (start_active == true || end_active == true)) {
+            if (start == true 
+                    || end == true 
+                    || start_active == true 
+                    || end_active == true) {
 
                 ActiveSet startNodeSet = model.getActiveSetForNode(startNode);
                 ActiveSet endNodeSet = model.getActiveSetForNode(endNode);
@@ -143,33 +142,17 @@ public class SteinerPDAlgo {
                         && (endNodeSet == null || model.isRequirementConnectivtyMetInSet(endNodeSet) == true))
                 {
                     i++;
-                    end_loop++;
                     continue;
                 }
-//                if(startNodeSet != null && endNodeSet != null &&
-//                    (startNodeSet.getSetId() == endNodeSet.getSetId()))
-//                {
-//                    if(model.isRequirementConnectivtyMetInSet(startNodeSet) == true)
-//                    {
-//                        i++;
-//                        end_loop++;
-//                        continue;
-//                    }
-//                }
+
                 currentEdge.setPrimal(1);
                 startNode.setActive(true);
                 endNode.setActive(true);
-                List<Edge> temp_list = new ArrayList<Edge>();
-                temp_list.add(currentEdge);
-
-                end_loop++;
-                graphPanel.drawMould(temp_list);
+                graphPanel.drawMould(Arrays.asList(currentEdge));
                 Thread.sleep(1000);
-                i=0;
+                i=0;//start from 0 to consider non terminal edges again
 
                 //Update Active Set
-               
-
                 if (startNodeSet == null
                     && endNodeSet == null) {
                     //Create separate activeSet for both nodes
@@ -183,12 +166,10 @@ public class SteinerPDAlgo {
                 }
                 if (startNodeSet == null
                         && endNodeSet != null) {
-
                     endNodeSet.addNode(startNode);
                 }
                 if (startNodeSet != null
-                    && endNodeSet == null) {
-
+                        && endNodeSet == null) {
                     startNodeSet.addNode(endNode);
                 }
                 if (startNodeSet != null && endNodeSet != null) {
@@ -197,7 +178,6 @@ public class SteinerPDAlgo {
                     }
                 }
 
-                model.printActiveSets();
                 if(model.requirementConnectivityMet() == true)
                     break;
                 continue;

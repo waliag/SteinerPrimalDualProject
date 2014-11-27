@@ -54,4 +54,10 @@ public class Edge {
     public double getGrowth(){
     	return _growth;
     }
+    
+    public void clearState()
+    {
+        _primal_x = 0;
+        _growth = 0;
+    }
 }

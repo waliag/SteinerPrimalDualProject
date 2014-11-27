@@ -66,6 +66,11 @@ public class Node {
     	return _active;
     }
     
+    public void clearState()
+    {
+        _active = false;
+    }
+    
    /* public boolean traverse(Node n)
     {
     	List<Node> temp_list = new ArrayList<Node>();

@@ -145,4 +145,15 @@ public class SPDModel {
 
         return retVal;
     }
+    
+    public void clearState()
+    {
+        _activeSets.clear();
+        for(Node node:_node_list){
+            node.clearState();
+        }
+        for(Edge edge:_edges){
+            edge.clearState();
+        }
+    }
 }
