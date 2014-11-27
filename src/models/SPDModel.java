@@ -9,11 +9,13 @@ public class SPDModel {
     private final List<Node> _node_list;
     private final List<Edge> _edges;
     private List<ActiveSet> _activeSets;
+    private int _numActiveSets;
 
     public SPDModel() {
         _node_list = new ArrayList<Node>();
         _edges = new ArrayList<Edge>();
         _activeSets = new ArrayList<ActiveSet>();
+        _numActiveSets = 0;
     }
 
     public void addNode(int x, int y) {
@@ -53,13 +55,21 @@ public class SPDModel {
     }
 
     public List<Node> getAllNodes() {
-        return new ArrayList<Node>(_node_list);
+        return _node_list;//new ArrayList<>(_node_list);
     }
 
     public List<Edge> getAllEdges() {
-        return new ArrayList<Edge>(_edges);
+        return _edges;//new ArrayList<>(_edges);
     }
 
+    public int getNumActiveSets()
+    {
+        return _numActiveSets;
+    }
+    public void setNumActiveSets()
+    {
+        ++_numActiveSets;
+    }
     public ActiveSet getActiveSetforSetId(int setId) {
         for (ActiveSet set : _activeSets) {
             if (set.getSetId() == setId) {
@@ -93,5 +103,46 @@ public class SPDModel {
                 }
             }
         }
+    }
+    public boolean requirementConnectivityMet()
+    {
+        boolean retVal = true;
+        for(ActiveSet set: _activeSets)
+        {
+            if(set.isActive())
+            {
+                for(Node node:set.getActiveSetNodes())
+                {
+                    if(node.isTeminal())
+                    {
+                        List<Node> connectivityReq = node.getConnections();
+                        for(Node n:connectivityReq )
+                        {
+                            if(set.isNodePresentinActiveSet(n) == false)
+                                retVal = false;
+                        }
+                    }
+                }
+            }
+        }
+        return retVal;
+    }
+    public boolean isRequirementConnectivtyMetInSet(ActiveSet set)
+    {
+        boolean retVal = true;
+        if (set.isActive()) {
+            for (Node node : set.getActiveSetNodes()) {
+                if (node.isTeminal()) {
+                    List<Node> connectivityReq = node.getConnections();
+                    for (Node n : connectivityReq) {
+                        if (set.isNodePresentinActiveSet(n) == false) {
+                            retVal = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return retVal;
     }
 }

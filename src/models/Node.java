@@ -19,7 +19,6 @@ public class Node {
     private boolean _is_terminal;
     private List<Node> _must_be_connected_nodes;
     private boolean _active;
-    private int _activeSetId;
     
     public Node(int x_pos, int y_pos){
         _id = ++_gloabal_counter;
@@ -27,16 +26,8 @@ public class Node {
         _y_pos = y_pos;
         _must_be_connected_nodes = new ArrayList<Node>();
         _active = false;
-        _activeSetId = -1;
     }
-    public int getActiveSetId()
-    {
-        return _activeSetId;
-    }
-    public void setActiveSetId(int setId)
-    {
-        _activeSetId = setId;
-    }
+ 
     public String getName(){
         return "N"+_id; 
     }
