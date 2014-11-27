@@ -21,6 +21,10 @@ public class ActiveSet {
     {
         _isActive = false;
     }
+    public boolean isActive()
+    {
+        return _isActive;
+    }
     public List<Node> getActiveSetNodes()
     {
         return new ArrayList<Node>(_activeNodes);
@@ -40,5 +44,16 @@ public class ActiveSet {
             addNodeinActiveSet(node);
         }
         set.deactivateSet();
+    }
+    public boolean isNodePresentinActiveSet(Node node)
+    {
+        boolean present = false;
+        for(Node setNode: _activeNodes){
+            if(setNode.getName().equals(node.getName())){
+                present = true;
+                break;
+            }
+        }
+        return present;
     }
 }

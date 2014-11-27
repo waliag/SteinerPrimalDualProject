@@ -10,10 +10,30 @@ public class SteinerPDAlgo {
 
     public void runAlgorithm(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
 
+        //Test Code
+        for (int i = 0; i < 3; i++) {
+            model.addNode(100 + i * 100, 100);
+            model.addNode(100 + i * 100, 200);
+        }
+
+        model.addEdge("n1", "n3", 1);
+        model.addEdge("n3", "n5", 13);
+        model.addEdge("n5", "n6", 9);
+        model.addEdge("n6", "n4", 15);
+        model.addEdge("n4", "n2", 2);
+        model.addEdge("n2", "n1", 10);
+        model.addEdge("n3", "n4", 3);
+
+        model.setTerminals("n1", "n2");
+        model.setTerminals("n5", "n6");
+
+        Thread.sleep(3000);
+        //END test code
+
         final List<Edge> _edges = model.getAllEdges();
         final List<Node> _nodes = model.getAllNodes();
         sortEdges(_edges, _nodes, graphPanel);
-        constructForest(_edges, _nodes, graphPanel);
+        constructForest(model, _edges, graphPanel);
 
         /*prune(model);*/
     }
@@ -26,7 +46,7 @@ public class SteinerPDAlgo {
             if (start == true && end == true) {
                 growth = edges.get(i).getCost() / 2;
                 edges.get(i).setGrowth(growth);
-            } else if ((start == true && end == false) || (start == false && end == true)) {
+            } else {
                 growth = edges.get(i).getCost();
                 edges.get(i).setGrowth(growth);
             }
@@ -68,73 +88,76 @@ public class SteinerPDAlgo {
      System.out.println(edges.get(j).getCost());
     
      }*/
-    
-    public void constructForest(List<Edge> edges, List<Node> nodes, DisplayPanel graphPanel) throws InterruptedException {
+    public void constructForest(SPDModel model, List<Edge> edges, DisplayPanel graphPanel) throws InterruptedException {
         boolean start;
         boolean end;
         int end_loop = 0;
         int i = 0;
         int numActiveSets = 0;
-        while (end_loop != edges.size()) {
+       // List<Edge> edges = model.getAllEdges();
 
-            start = edges.get(i).getStartNode().isTeminal();
-            end = edges.get(i).getEndNode().isTeminal();
-            if ((start == true && end == false)
-                    || (start == false && end == true) || (start == true && end == true)) {
-                edges.get(i).setPrimal(1);
-                edges.get(i).getStartNode().setActive(true);
-                edges.get(i).getEndNode().setActive(true);
+        while (end_loop != edges.size() && i < edges.size()) {
+
+            Node startNode = edges.get(i).getStartNode();
+            Node endNode = edges.get(i).getEndNode();
+            Edge currentEdge = edges.get(i);
+            start = startNode.isTeminal();
+            end = endNode.isTeminal();
+
+            boolean start_active = startNode.getActive();
+            boolean end_active = endNode.getActive();
+
+            if (((start == true && end == false)
+                    || (start == false && end == true)
+                    || (start == true && end == true))
+                    || (start_active == true || end_active == true)) {
+
+                currentEdge.setPrimal(1);
+                startNode.setActive(true);
+                endNode.setActive(true);
                 List<Edge> temp_list = new ArrayList<Edge>();
-                temp_list.add(edges.get(i));
+                temp_list.add(currentEdge);
 
                 end_loop++;
                 graphPanel.drawMould(temp_list);
                 Thread.sleep(1000);
+                i++;
 
-            }
+                //Update Active Set
+                ActiveSet startNodeSet = model.getActiveSetForNode(startNode);
+                ActiveSet endNodeSet = model.getActiveSetForNode(endNode);
 
-            boolean start_active = edges.get(i).getStartNode().getActive();
-            boolean end_active = edges.get(i).getEndNode().getActive();
-            if ((edges.get(i).getGrowth() == 0) && (start_active == true || end_active == true)) {
-                edges.get(i).setPrimal(1);
-                edges.get(i).getStartNode().setActive(true);
-                edges.get(i).getEndNode().setActive(true);
-                List<Edge> temp_list = new ArrayList<Edge>();
-                temp_list.add(edges.get(i));
+                if (startNodeSet == null
+                        && endNodeSet == null) {
+                    //Create separate activeSet for both nodes
+                    ActiveSet newActiveNodeSet = new ActiveSet(++numActiveSets);
 
-                end_loop++;
-                graphPanel.drawMould(temp_list);
-                Thread.sleep(1000);
-
-            }
-
-            i++;
-            if (i >= edges.size()) {
-                for (int j = 0; j < edges.size(); j++) {
-                    boolean start_active1 = edges.get(j).getStartNode().getActive();
-                    boolean end_active1 = edges.get(j).getEndNode().getActive();
-                    if ((edges.get(j).getGrowth() == 0) && (start_active1 == true || end_active1 == true)) {
-                        edges.get(j).setPrimal(1);
-                        edges.get(j).getStartNode().setActive(true);
-                        edges.get(j).getEndNode().setActive(true);
-                        List<Edge> temp_list1 = new ArrayList<Edge>();
-                        temp_list1.add(edges.get(j));
-
-                        end_loop++;
-                        graphPanel.drawMould(temp_list1);
-                        Thread.sleep(1000);
-
-                    }
+                    newActiveNodeSet.addNode(startNode);
+                    newActiveNodeSet.addNode(endNode);
+                    model.addActiveSet(newActiveNodeSet);
 
                 }
+                if (startNodeSet == null
+                        && endNodeSet != null) {
 
+                    endNodeSet.addNode(startNode);
+                }
+                if (startNodeSet != null
+                        && endNodeSet == null) {
+
+                    startNodeSet.addNode(endNode);
+                }
+                if (startNodeSet != null && endNodeSet != null) {
+                    if (startNodeSet.getSetId() != endNodeSet.getSetId()) {
+                        startNodeSet.mergeActiveSet(endNodeSet);
+                    }
+                }
+
+                model.printActiveSets();
             }
-            //sortEdgesSecondItr(edges,nodes,graphPanel);
         }
-  
     }
 
-    
     public void prune(SPDModel model) {
 
     }

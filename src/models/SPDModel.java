@@ -60,12 +60,38 @@ public class SPDModel {
         return new ArrayList<Edge>(_edges);
     }
 
-    public ActiveSet getActiveSet(int setId) {
+    public ActiveSet getActiveSetforSetId(int setId) {
         for (ActiveSet set : _activeSets) {
             if (set.getSetId() == setId) {
                 return set;
             }
         }
         return null;
+    }
+    public ActiveSet getActiveSetForNode(Node node)
+    {
+        for(ActiveSet set: _activeSets){
+           if(set.isActive() && set.isNodePresentinActiveSet(node) == true){
+               return set;
+           }            
+        }
+        return null;
+    }
+    public void addActiveSet(ActiveSet set)
+    {
+        _activeSets.add(set);
+    }
+    public void printActiveSets()
+    {
+        for(ActiveSet set:_activeSets)
+        {
+            if(set.isActive()){
+                System.out.println("id " + set.getSetId());
+                System.out.println("Nodes");
+                for (Node n : set.getActiveSetNodes()) {
+                    System.out.println(n.getName() + ",");
+                }
+            }
+        }
     }
 }
