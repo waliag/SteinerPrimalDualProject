@@ -2,6 +2,7 @@ package models;
 
 import gui.DisplayPanel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ public class SteinerPDAlgo {
 
     public void runAlgorithm(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
 
+        
         //START Test Code
         if(model.getAllNodes().isEmpty()){
             int offset = 130;
@@ -18,13 +20,13 @@ public class SteinerPDAlgo {
                 model.addNode(offset + i * 100, 200);
             }
 
-            model.addEdge("n1", "n3", 3);
+            model.addEdge("n1", "n2", 4);
+            model.addEdge("n1", "n3", 1);
+            model.addEdge("n2", "n4", 3);
             model.addEdge("n3", "n5", 13);
-            model.addEdge("n5", "n6", 9);
-            model.addEdge("n6", "n4", 15);
-            model.addEdge("n4", "n2", 1);
-            model.addEdge("n2", "n1", 10);
             model.addEdge("n3", "n4", 2);
+            model.addEdge("n4", "n6", 15);
+            model.addEdge("n6", "n5", 9);
 
             model.setTerminals("n1", "n2");
             model.setTerminals("n5", "n6");
@@ -50,29 +52,28 @@ public class SteinerPDAlgo {
             }
         }
         
-        final List<Edge> edges = model.getAllEdges();
-        final List<Node> nodes = model.getAllNodes();
-        
-        sortEdges(edges, nodes, graphPanel);
+        sortEdges(model,graphPanel);
         constructForest(model, graphPanel);
-        /*prune(model);*/
+        prune(model, graphPanel);
     }
 
-    public void sortEdges(List<Edge> edges, List<Node> nodes, DisplayPanel graphPanel) throws InterruptedException {
+    public void sortEdges(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
         double growth;
+        List<Edge> edges = model.getAllEdges();
+        
         for (int i = 0; i < edges.size(); i++) {
             Edge currEdge = edges.get(i);
-            boolean start = currEdge.getStartNode().isTeminal();
-            boolean end = currEdge.getEndNode().isTeminal();
+            Node startNode = currEdge.getStartNode();
+            Node endNode = currEdge.getEndNode();
+            boolean start = startNode.getActive();
+            boolean end = endNode.getActive();
+     
+            growth = currEdge.getCost() - (startNode.getDual() + endNode.getDual());
             
             if (start == true && end == true) {
-                growth = currEdge.getCost() / 2;
-                currEdge.setGrowth(growth);
-            } else {
-                growth = currEdge.getCost();
-                currEdge.setGrowth(growth);
+               growth = growth /2;
             }
-
+            currEdge.setGrowth(growth);
         }
         Collections.sort(edges, new EdgeComparator());
         for (int j = 0; j < edges.size(); j++) {
@@ -111,8 +112,6 @@ public class SteinerPDAlgo {
     
      }*/
     public void constructForest(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
-        boolean start;
-        boolean end;
         List<Edge> edges = model.getAllEdges();
         int i = 0;
         
@@ -120,9 +119,7 @@ public class SteinerPDAlgo {
             Edge currentEdge = edges.get(i);
             Node startNode = currentEdge.getStartNode();
             Node endNode = currentEdge.getEndNode();
-            start = startNode.isTeminal();
-            end = endNode.isTeminal();
-
+       
             boolean start_active = startNode.getActive();
             boolean end_active = endNode.getActive();
 
@@ -131,10 +128,8 @@ public class SteinerPDAlgo {
                 i++;
                 continue;
             }
-            if (start == true 
-                    || end == true 
-                    || start_active == true 
-                    || end_active == true) {
+            if (start_active == true 
+                || end_active == true) {
 
                 ActiveSet startNodeSet = model.getActiveSetForNode(startNode);
                 ActiveSet endNodeSet = model.getActiveSetForNode(endNode);
@@ -146,38 +141,70 @@ public class SteinerPDAlgo {
                 }
 
                 currentEdge.setPrimal(1);
-                startNode.setActive(true);
-                endNode.setActive(true);
-                graphPanel.drawMould(Arrays.asList(currentEdge));
+                model.addToConsideredEdge(currentEdge); //Add to list of edges currently considered
+               
+                if(startNodeSet == null || (model.isRequirementConnectivtyMetInSet(startNodeSet) == false))
+                    startNode.setActive(true);
+                
+                if(endNodeSet == null || (model.isRequirementConnectivtyMetInSet(endNodeSet) == false))
+                    endNode.setActive(true);
+               
+                model.updateDualVariables(currentEdge.getGrowth());
+               // model.printDualVariables();
+                
+                graphPanel.drawMould(Arrays.asList(currentEdge), false);
                 Thread.sleep(1000);
                 i=0;//start from 0 to consider non terminal edges again
+                
 
                 //Update Active Set
                 if (startNodeSet == null
                     && endNodeSet == null) {
-                    //Create separate activeSet for both nodes
+                    
+                    //Both nodes are non terminals
+                    //Create a new active set
                     model.setNumActiveSets();
                     ActiveSet newActiveNodeSet = new ActiveSet(model.getNumActiveSets());
 
                     newActiveNodeSet.addNode(startNode);
                     newActiveNodeSet.addNode(endNode);
                     model.addActiveSet(newActiveNodeSet);
-
+                    if(model.isRequirementConnectivtyMetInSet(newActiveNodeSet))
+                    {   model.deactivateAllNodesInSet(newActiveNodeSet);
+                    }
+                        
                 }
+                //startNode is non terminal
                 if (startNodeSet == null
                         && endNodeSet != null) {
                     endNodeSet.addNode(startNode);
+                     if(model.isRequirementConnectivtyMetInSet(endNodeSet))
+                    {   model.deactivateAllNodesInSet(endNodeSet);
+                    }
                 }
+                //End node is non terminal
                 if (startNodeSet != null
                         && endNodeSet == null) {
+                    
                     startNodeSet.addNode(endNode);
+                     if(model.isRequirementConnectivtyMetInSet(startNodeSet))
+                    {   model.deactivateAllNodesInSet(startNodeSet);
+                    }
                 }
+                //Both are terminal nodes
                 if (startNodeSet != null && endNodeSet != null) {
                     if (startNodeSet.getSetId() != endNodeSet.getSetId()) {
                         startNodeSet.mergeActiveSet(endNodeSet);
+                        model.deleteActiveSet(endNodeSet);
+                        if(model.isRequirementConnectivtyMetInSet(startNodeSet))
+                        {   
+                             model.deactivateAllNodesInSet(startNodeSet);
+                        }
                     }
                 }
-
+                sortEdges(model,graphPanel);
+                //model.printActiveSets();
+                //Exit condition for algo
                 if(model.requirementConnectivityMet() == true)
                     break;
                 continue;
@@ -186,8 +213,8 @@ public class SteinerPDAlgo {
         }
    }
 
-    public void prune(SPDModel model) {
-
+    public void prune(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
+    		model.checkConnectivityRequirements(graphPanel);
     }
 
 }

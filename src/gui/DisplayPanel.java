@@ -81,11 +81,15 @@ public class DisplayPanel extends JPanel
         g.drawString(String.valueOf(edge.getCost()),edge.getMidX(),edge.getMidY() - 10);
     }
     
-    public void drawMould(List<Edge> edges){
+    public void drawMould(List<Edge> edges, boolean clear){
         Graphics g = getGraphics();
         Graphics2D g2d = (Graphics2D) g;
         Composite originalComposite = g2d.getComposite();
-        g2d.setPaint(Color.gray);
+        if(clear == false){
+        	g2d.setPaint(Color.gray);
+        } else {
+        	g2d.setPaint(Color.yellow);
+        }
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
         BasicStroke stroke = new BasicStroke(_DIA*2,BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_ROUND);

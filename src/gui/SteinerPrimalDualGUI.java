@@ -64,7 +64,7 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
         //this.add(edgeButton);
         
       //Create the button to add terminals
-        terminalButton = new JButton("Add Terminals");
+        terminalButton = new JButton("Add Connectivity Requirements");
         
         ActionListener TerminalActionListener = new ActionListener() {
             @Override
@@ -105,23 +105,6 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
         runAlgoButton.setSize(new Dimension(20, 20));
         runAlgoButton.addActionListener(actionListener);
         topPanel.add(runAlgoButton);
-        
-//        ActionListener connectivityActionListener = new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent event) {
-//                Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
-//                String connect_condition = (String) JOptionPane.showInputDialog(this, 
-//                        "Enter connectivity requirement (N1,N2)", "",
-//                        JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
-//                checkValidStringAndCreateEdges(connect_condition);
-//            }
-//        };
-//        
-//        
-//        connectivityButton = new JButton("Add Connectivity");
-//        connectivityButton.setSize(new Dimension(20, 20));
-//        connectivityButton.addActionListener(connectivityActionListener);
-//        topPanel.add(connectivityButton);
         
         Container content = getContentPane();
         content.setLayout(new BorderLayout());

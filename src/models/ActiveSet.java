@@ -6,24 +6,14 @@ import java.util.List;
 public class ActiveSet {
     private final int _setId;
     private List<Node> _activeNodes;
-    private boolean _isActive;
     ActiveSet(int setId)
     {
         _activeNodes = new ArrayList<Node>();
         _setId = setId;
-        _isActive = true;
     }
     public void addNode(Node node)
     {
         _activeNodes.add(node);
-    }
-    public void deactivateSet()
-    {
-        _isActive = false;
-    }
-    public boolean isActive()
-    {
-        return _isActive;
     }
     public List<Node> getActiveSetNodes()
     {
@@ -43,7 +33,6 @@ public class ActiveSet {
         {
             addNodeinActiveSet(node);
         }
-        set.deactivateSet();
     }
     public boolean isNodePresentinActiveSet(Node node)
     {

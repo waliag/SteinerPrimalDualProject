@@ -12,20 +12,23 @@ import javax.swing.tree.TreeNode;*/
 
 public class Node {
     
-    private static int _gloabal_counter = 0;
+    private static int _global_counter = 0;
     
     private final int _id;
     private final int _x_pos,_y_pos;
     private boolean _is_terminal;
     private List<Node> _must_be_connected_nodes;
     private boolean _active;
+    private double _dual_y;
     
     public Node(int x_pos, int y_pos){
-        _id = ++_gloabal_counter;
+        _id = ++_global_counter;
         _x_pos = x_pos;
         _y_pos = y_pos;
         _must_be_connected_nodes = new ArrayList<Node>();
         _active = false;
+        _dual_y = 0;
+        _is_terminal = false;
     }
  
     public String getName(){
@@ -46,6 +49,7 @@ public class Node {
     
     public void setTerminal(boolean terminal) {
     	_is_terminal = terminal;
+        _active = true;
     }
     
     public void addToConnectNodes(Node connectNode){
@@ -68,7 +72,10 @@ public class Node {
     
     public void clearState()
     {
-        _active = false;
+        if(_is_terminal == true )
+             _active = true;
+        else
+            _active = false;
     }
     
    /* public boolean traverse(Node n)
@@ -92,7 +99,13 @@ public class Node {
     	}
     	*/
     
-    
-   
+    public double getDual()
+    {
+        return _dual_y;
+    }
+   public void setDual(double val)
+   {
+       _dual_y += val;
+   }
     
 }
