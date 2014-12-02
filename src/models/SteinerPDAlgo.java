@@ -133,6 +133,10 @@ public class SteinerPDAlgo {
 
                 ActiveSet startNodeSet = model.getActiveSetForNode(startNode);
                 ActiveSet endNodeSet = model.getActiveSetForNode(endNode);
+                if(startNodeSet == endNodeSet) {
+                	i++;
+                    continue;
+                }
                 if((startNodeSet == null || model.isRequirementConnectivtyMetInSet(startNodeSet) == true)
                         && (endNodeSet == null || model.isRequirementConnectivtyMetInSet(endNodeSet) == true))
                 {
@@ -142,14 +146,15 @@ public class SteinerPDAlgo {
 
                 currentEdge.setPrimal(1);
                 model.addToConsideredEdge(currentEdge); //Add to list of edges currently considered
-               
+                model.updateDualVariables(currentEdge.getGrowth());
+                
                 if(startNodeSet == null || (model.isRequirementConnectivtyMetInSet(startNodeSet) == false))
                     startNode.setActive(true);
                 
                 if(endNodeSet == null || (model.isRequirementConnectivtyMetInSet(endNodeSet) == false))
                     endNode.setActive(true);
                
-                model.updateDualVariables(currentEdge.getGrowth());
+                
                // model.printDualVariables();
                 
                 graphPanel.drawMould(Arrays.asList(currentEdge), false);
