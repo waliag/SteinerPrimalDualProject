@@ -1,8 +1,6 @@
 package models;
 
 import gui.DisplayPanel;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -82,35 +80,6 @@ public class SteinerPDAlgo {
 
     }
 
-    /* public void sortEdgesSecondItr(List<Edge> edges, List<Node> node, DisplayPanel graphPanel) throws InterruptedException
-     {
-     double growth;
-     for(int i = 0; i<edges.size();i++)
-     {
-     boolean start_active = edges.get(i).getStartNode().getActive();
-     boolean end_active = edges.get(i).getStartNode().getActive();
-     if(edges.get(i).getPrimal()==1)
-     {
-     edges.get(i).setGrowth(0);
-     }
- 	   
-     else if(start_active==true && end_active==true)
-     {
-     growth = edges.get(i).getCost()/2;
-     edges.get(i).setGrowth(growth);
-     }
-     else if((start_active==true && end_active == false)||(start_active==false && end_active==true))
-     {
-     growth = edges.get(i).getCost();
-     edges.get(i).setGrowth(growth);
-     }
- 		   
-     }
-     Collections.sort(edges, new EdgeComparator());
-     for(int j=0;j<edges.size();j++)
-     System.out.println(edges.get(j).getCost());
-    
-     }*/
     public void constructForest(SPDModel model, DisplayPanel graphPanel) throws InterruptedException {
         List<Edge> edges = model.getAllEdges();
         int i = 0;

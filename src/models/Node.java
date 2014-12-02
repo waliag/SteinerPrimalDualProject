@@ -76,6 +76,7 @@ public class Node {
              _active = true;
         else
             _active = false;
+        _dual_y = 0.0;
     }
     
    /* public boolean traverse(Node n)

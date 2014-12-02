@@ -53,7 +53,7 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
             public void actionPerformed(ActionEvent event) {
            
             	Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
-                String connect_condition = (String) JOptionPane.showInputDialog(topPanel, "Enter the node name between which the edge is drawn with the weight. Format is Node1,Node2,Weight.Example:N1,N2,5.", "Edge and weight", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
+                String connect_condition = (String) JOptionPane.showInputDialog(topPanel, "Enter edge and its weight(Format:N1,N2,5)", "Edge and weight", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
                 if(connect_condition!=null){
                 	checkValidStringAndCreateEdges(connect_condition);
                 }  
@@ -71,7 +71,7 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
             public void actionPerformed(ActionEvent event) {
            
             	Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
-                String connect_req = (String) JOptionPane.showInputDialog(topPanel, "Enter the connectivity requirement to connect 2 nodes. In order to connect Node1 and Node2, format is Node1,Node2.Example:N1,N2", "Connectivity Requirement", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
+                String connect_req = (String) JOptionPane.showInputDialog(topPanel, "Enter the connectivity requirement(Format:N1,N2)", "Connectivity Requirement", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
                 if(connect_req!=null){
                 	checkValidStringAndSetTerminals(connect_req);
                 }
