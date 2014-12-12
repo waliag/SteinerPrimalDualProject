@@ -10,7 +10,9 @@ import java.awt.Stroke;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.JPanel;
+
 import models.*;
 
 /**
@@ -43,12 +45,16 @@ public class DisplayPanel extends JPanel
                         Logger.getLogger(SteinerPrimalDualGUI.class.getName())
                                 .log(Level.SEVERE, null, ex);
                     }
-                    for(Node node:model.getAllNodes()){
+                    List<Node> allNodeList = model.getNewListOfAllNodes();
+                    for(Node node:allNodeList){
                         drawNode(node);
                     }
-                    for(Edge edge:model.getAllEdges()){
+                    allNodeList.clear();
+                    List<Edge> allEdgeList = model.getNewListOfAllEdges();
+                    for(Edge edge:allEdgeList){
                         drawEdge(edge);
                     }
+                    allEdgeList.clear();
                 }
             }
         }).start();

@@ -2,21 +2,24 @@ package models;
 
 import gui.DisplayPanel;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
 import java.util.Map;
 
 public class SPDModel {
 
     private final List<Node> _node_list;
-    private final List<Edge> _edges;
-    private List<ActiveSet> _activeSets;
+    private  final List<Edge> _edges;
+    private final List<ActiveSet> _activeSets;
     private int _numActiveSets;
-    private List<Edge> _considered_edges;
+    private final List<Edge> _considered_edges;
+    private final List<Edge> _original_edges;
 
     public SPDModel() {
         _node_list = new ArrayList<Node>();
@@ -24,6 +27,7 @@ public class SPDModel {
         _activeSets = new ArrayList<ActiveSet>();
         _considered_edges = new ArrayList<Edge>();
         _numActiveSets = 0;
+        _original_edges = new ArrayList<Edge>();
     }
 
     public void addNode(int x, int y) {
@@ -35,6 +39,7 @@ public class SPDModel {
         Node endNode = getNodeByName(endNodeName);
         if (startNode != null && endNode != null) {
             _edges.add(new Edge(startNode, endNode, cost));
+            _original_edges.add(new Edge(startNode, endNode, cost));
         }
     }
 
@@ -68,6 +73,14 @@ public class SPDModel {
 
     public List<Edge> getAllEdges() {
         return _edges;//new ArrayList<>(_edges);
+    }
+    
+    public List<Node> getNewListOfAllNodes() {
+        return new ArrayList<Node>(_node_list);
+    }
+
+    public List<Edge> getNewListOfAllEdges() {
+        return new ArrayList<Edge>(_edges);
     }
 
     public int getNumActiveSets() {
@@ -175,9 +188,12 @@ public class SPDModel {
         for (Node node : _node_list) {
             node.clearState();
         }
-        for (Edge edge : _edges) {
+        _edges.clear();
+        for (Edge edge : _original_edges) {
             edge.clearState();
+            _edges.add(edge);
         }
+       
         _considered_edges.clear();
         _numActiveSets = 0;
     }
@@ -189,15 +205,12 @@ public class SPDModel {
     public void checkConnectivityRequirements(DisplayPanel graphPanel) throws InterruptedException {
         Edge considered_edge;
         boolean canBePruned = true;
-        Map<Node, Integer> distance = new HashMap<Node, Integer>();
 
         for (int edge_itr = (_considered_edges.size() - 1); edge_itr >= 0; edge_itr--) {
             considered_edge = _considered_edges.get(edge_itr);
             _considered_edges.remove(edge_itr);
             for (Node node : _node_list) {
-                loadDistanceForCurrNode(node, distance);
-                canBePruned = checkIfEdgeCanBePruned(node, distance);
-                distance.clear();
+                canBePruned = checkIfEdgeCanBePruned(node);
                 if (canBePruned == false) {
                     break;
                 }
@@ -206,108 +219,64 @@ public class SPDModel {
                 _considered_edges.add(edge_itr, considered_edge);
             } else {
                 graphPanel.drawMould(Arrays.asList(considered_edge), true);
-                Thread.sleep(1000);
-                System.out.println(considered_edge.getCost());
+                Thread.sleep(2000);
+               // System.out.println(considered_edge.getCost());
             }
         }
 
     }
 
-    private void loadDistanceForCurrNode(Node node, Map<Node, Integer> distance) {
-        HashSet<Node> unProccessedNodes = new HashSet<Node>();
-        HashSet<Node> proccessedNodes = new HashSet<Node>();
-        Node currNode;
-        distance.put(node, 0);
-        unProccessedNodes.add(node);
-        while (unProccessedNodes.size() > 0) {
-            currNode = getMinimumCostNode(unProccessedNodes, distance);
-            proccessedNodes.add(currNode);
-            unProccessedNodes.remove(currNode);
-            findMinimumDistancesForCurrNode(currNode, proccessedNodes, unProccessedNodes, distance);
-        }
-
-    }
-
-    private void findMinimumDistancesForCurrNode(Node currNode, HashSet<Node> proccessedNodes, HashSet<Node> unProccessedNodes, Map<Node, Integer> distance) {
-        List<Node> adjacentNodes = getNeighbors(currNode, proccessedNodes);
-        for (Node target : adjacentNodes) {
-            if (getShortestDistance(target, distance) > getShortestDistance(currNode, distance) + getDistance(currNode, target)) {
-                distance.put(target, getShortestDistance(currNode, distance) + getDistance(currNode, target));
-                unProccessedNodes.add(target);
-            }
-        }
-    }
-
-    private int getDistance(Node currNode, Node target) {
-        int retVal = 0;
+    private List<Node> getAdjacentNeighborsForNode(Node currNode, HashSet<Node> visitedNodes) {
+        List<Node> nodeNeighbors = new ArrayList<Node>();
         for (Edge edge : _considered_edges) {
             if (edge.getStartNode().equals(currNode)
-                    && edge.getEndNode().equals(target)) {
-                retVal = edge.getCost();
-                break;
+                    && !isVisited(edge.getEndNode(), visitedNodes)) {
+            	nodeNeighbors.add(edge.getEndNode());
             } else if (edge.getEndNode().equals(currNode)
-                    && edge.getStartNode().equals(target)) {
-                retVal = edge.getCost();
-                break;
+                    && !isVisited(edge.getStartNode(), visitedNodes)) {
+            	nodeNeighbors.add(edge.getStartNode());
             }
         }
-        return retVal;
+        return nodeNeighbors;
     }
 
-    private List<Node> getNeighbors(Node currNode, HashSet<Node> proccessedNodes) {
-        List<Node> neighbors = new ArrayList<Node>();
-        for (Edge edge : _considered_edges) {
-            if (edge.getStartNode().equals(currNode)
-                    && !isSettled(edge.getEndNode(), proccessedNodes)) {
-                neighbors.add(edge.getEndNode());
-            } else if (edge.getEndNode().equals(currNode)
-                    && !isSettled(edge.getStartNode(), proccessedNodes)) {
-                neighbors.add(edge.getStartNode());
-            }
-        }
-        return neighbors;
+    private boolean isVisited(Node currNode, HashSet<Node> visitedNodes) {
+        return visitedNodes.contains(currNode);
     }
 
-    private boolean isSettled(Node currNode, HashSet<Node> proccessedNodes) {
-        return proccessedNodes.contains(currNode);
-    }
-
-    private Node getMinimumCostNode(HashSet<Node> unProccessedNodes, Map<Node, Integer> distance) {
-        Node min = null;
-        for (Node node : unProccessedNodes) {
-            if (min == null) {
-                min = node;
-            } else {
-                if (getShortestDistance(node, distance) < getShortestDistance(min, distance)) {
-                    min = node;
-                }
-            }
-        }
-        return min;
-    }
-
-    private int getShortestDistance(Node node, Map<Node, Integer> distance) {
-        Integer dist = distance.get(node);
-        if (dist == null) {
-            return Integer.MAX_VALUE;
-        } else {
-            return dist;
-        }
-    }
-
-    private boolean checkIfEdgeCanBePruned(Node node, Map<Node, Integer> distance) {
+    private boolean checkIfEdgeCanBePruned(Node node) {
         List<Node> connectivityReq = node.getConnections();
         boolean retVal = true;
-        for (Node currNode : connectivityReq) {
-            if (distance.get(currNode) == null) {
+        HashSet<Node> visitedNodes = new HashSet<Node>();
+        for (Node connectNode : connectivityReq) {
+            if (checkPathExistsUsingDFS(node,connectNode,visitedNodes) == false) {
                 retVal = false;
                 break;
             }
+            visitedNodes.clear();
         }
+        
         return retVal;
     }
 
-    public void updateDualVariables(double growthFactor) {
+    private boolean checkPathExistsUsingDFS(Node node, Node connectNode, HashSet<Node> visitedNodes) {
+    	 List<Node> adjacentNodes = getAdjacentNeighborsForNode(node, visitedNodes);
+    	 boolean retval = false;
+         for (Node adjacentNode : adjacentNodes) {
+        	 if(adjacentNode==connectNode){
+        		 retval = true;
+        		 break;
+        	 }
+        	 visitedNodes.add(adjacentNode);
+        	 retval = checkPathExistsUsingDFS(adjacentNode,connectNode,visitedNodes);
+        	 if(retval == true){
+        		 break;
+        	 }
+         }
+		return retval;
+	}
+
+	public void updateDualVariables(double growthFactor) {
         for (Node n : _node_list) {
             if (n.getActive()) {
                 n.setDual(growthFactor);
@@ -321,4 +290,20 @@ public class SPDModel {
 
         }
     }
+    
+    public void deletestruct(DisplayPanel graphPanel)
+    {
+    	_edges.clear();
+        _original_edges.clear();
+    	_node_list.clear();
+    	_activeSets.clear();
+    	_considered_edges.clear();
+    	
+        Node n = new Node(0,0);
+        n.setcounter();
+       
+        _numActiveSets = 0;
+  
+        graphPanel.repaint();
+    }    
 }

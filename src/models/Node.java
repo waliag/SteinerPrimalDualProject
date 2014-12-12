@@ -30,7 +30,10 @@ public class Node {
         _dual_y = 0;
         _is_terminal = false;
     }
- 
+    public void setcounter(){
+    	_global_counter = 0;
+    }
+    
     public String getName(){
         return "N"+_id; 
     }
@@ -108,5 +111,7 @@ public class Node {
    {
        _dual_y += val;
    }
+   
+  
     
 }

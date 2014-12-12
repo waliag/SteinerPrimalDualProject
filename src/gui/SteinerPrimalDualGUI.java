@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -25,21 +26,27 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
     /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
-	JButton edgeButton, terminalButton;
+    private static final long serialVersionUID = 1L;
+    JButton edgeButton, terminalButton;
     DisplayPanel graphPanel;
     JButton runAlgoButton;
+    JButton resetButton;
+    JButton clearButton;
+    JButton pruneButton;
     JButton connectivityButton;
     JPanel topPanel;
     SPDModel _model;
     boolean toggle = true;
+    JPanel connectivityPanel;
+    JLabel connectivityLabel;
+    String connectivityString;
     
     SteinerPrimalDualGUI() {
         _model = new SPDModel();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500,500);
+        setSize(700,700);
         topPanel = new JPanel();
-        topPanel.setSize(new Dimension(500, 50));
+        topPanel.setSize(new Dimension(700, 50));
         graphPanel = new DisplayPanel(_model);
 
         graphPanel.setVisible(true);
@@ -53,7 +60,8 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
             public void actionPerformed(ActionEvent event) {
            
             	Icon optionIcon = UIManager.getIcon("FileView.computerIcon");
-                String connect_condition = (String) JOptionPane.showInputDialog(topPanel, "Enter edge and its weight(Format:N1,N2,5)", "Edge and weight", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
+                String connect_condition = (String) JOptionPane.showInputDialog(topPanel, 
+                        "Enter edge and its weight(Format:N1,N2,5)", "Edge and weight", JOptionPane.QUESTION_MESSAGE, optionIcon, null, null);
                 if(connect_condition!=null){
                 	checkValidStringAndCreateEdges(connect_condition);
                 }  
@@ -90,7 +98,12 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
                     public void run()
                     {
                         try {
-                            new SteinerPDAlgo().runAlgorithm(_model, graphPanel);
+                            if(new SteinerPDAlgo().runAlgorithm(_model, graphPanel)== false)
+                            {
+                                runAlgoButton.setEnabled(false);
+                                pruneButton.setEnabled(true);
+                                resetButton.setEnabled(true);
+                            }
                         } catch (InterruptedException ex) {
                             Logger.getLogger(SteinerPrimalDualGUI.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -104,12 +117,92 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
         runAlgoButton = new JButton("Run Algo");
         runAlgoButton.setSize(new Dimension(20, 20));
         runAlgoButton.addActionListener(actionListener);
+        //runAlgoButton.setEnabled(false);
         topPanel.add(runAlgoButton);
+        
+        
+        clearButton = new JButton("Clear"); 
+        
+        ActionListener clearactionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            new Thread(new Runnable()
+            {
+            @Override	
+            public void run() 
+            {
+        	    new SteinerPDAlgo().clearAlgo(_model,graphPanel);
+                    connectivityString = "Requirement Connectivity: ";
+                    connectivityLabel.setText(connectivityString);    
+                    runAlgoButton.setEnabled(true);
+            }
+            }).start();
+        		
+        }
+        };
+        clearButton.addActionListener(clearactionListener);
+        topPanel.add(clearButton);   
+   
+        
+        resetButton = new JButton("Reset"); 
+        ActionListener resetactionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            new Thread(new Runnable()
+            {
+            @Override	
+            public void run() 
+            {
+        	    new SteinerPDAlgo().resetAlgo(_model,graphPanel);
+                    runAlgoButton.setEnabled(true);
+                    pruneButton.setEnabled(false);
+            }
+            }).start();
+        		
+        }
+        };
+        resetButton.addActionListener(resetactionListener);
+        resetButton.setEnabled(false);
+        topPanel.add(resetButton);   
+   
+        
+        pruneButton = new JButton("Prune");       
+        
+        ActionListener pruneactionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            new Thread(new Runnable()
+            {
+            @Override	
+            public void run() 
+            {
+                try{
+        	    new SteinerPDAlgo().prune(_model,graphPanel);
+                    resetButton.setEnabled(true);
+                    
+                    } catch (InterruptedException ex) {
+                            Logger.getLogger(SteinerPrimalDualGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    
+            }
+            }).start();
+        		
+        }
+        };
+        pruneButton.addActionListener(pruneactionListener);
+        pruneButton.setEnabled(false);
+        topPanel.add(pruneButton);   
+   
+        connectivityPanel = new JPanel();
+        connectivityString = "Requirement Connectivity: ";
+        connectivityLabel = new JLabel(connectivityString);
+        connectivityPanel.add(connectivityLabel);
         
         Container content = getContentPane();
         content.setLayout(new BorderLayout());
         content.add(topPanel, BorderLayout.NORTH);
         content.add(graphPanel, BorderLayout.CENTER);
+        content.add(connectivityPanel,BorderLayout.SOUTH);
 
     }
 
@@ -206,6 +299,8 @@ public class SteinerPrimalDualGUI extends JFrame implements MouseListener, Actio
         }
         if (valid_string == true) {
             _model.setTerminals(nodeStrArr[0], nodeStrArr[1]);
+            connectivityString = connectivityString + "(" +nodeStrArr[0] +"," + nodeStrArr[1] + ") ";
+            connectivityLabel.setText(connectivityString);
         }
         return valid_string;
 	}
